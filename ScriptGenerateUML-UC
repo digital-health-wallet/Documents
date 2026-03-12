@@ -1,0 +1,177 @@
+### Generate Using PlantUML
+
+
+@startuml
+skinparam classAttributeIconSize 0
+
+class Usuario {
+  - id_usuario: Integer
+  - email: String
+  - ativo: Boolean
+  - data_desativacao: Date
+  - google_access_token: String
+  - google_refresh_token: String
+  - google_token_expiration: Date
+  + autenticarPorEmail()
+  + inativarConta()
+}
+
+class Paciente {
+  - id_paciente: Integer
+  - nome: String
+  - data_nascimento: Date
+  - codigo_emergencia: String
+  - ficha_emergencial_ativa: Boolean
+  - tipo_sanguineo: String
+  + cadastrarPaciente()
+  + editarPerfil()
+  + inativarPerfilPaciente() 
+  + alterarStatusFichaPublica()
+}
+
+class Agendamento {
+  - id_agendamento: Integer
+  - tipo_consulta: Enum
+  - data_agendamento: Date
+  - hora_agendamento: Time
+  - hora_fim: Time
+  - status: String
+  - arquivado: Boolean
+  - google_event_id: String
+  + cadastrarAgendamento()
+  + reagendarAgendamento()
+  + cancelarAgendamento()
+  + finalizarAgendamento()
+  + arquivarAgendamento()
+  + sincronizarGoogleCalendar()
+}
+
+class Exame {
+  - id_exame: Integer
+  - nome_exame: String
+  - data_hora_exame: Date
+  - observacoes: String
+  + cadastrarExame()
+  + visualizarExame()
+  + editarExame()
+}
+
+class Receita {
+  - id_receita: Integer
+  - data_emissao: Date
+  - orientacoes_gerais: String
+  + cadastrarReceita()
+  + visualizarReceita()
+  + editarReceita()
+}
+
+class Item_Receita {
+  - id_item_receita: Integer
+  - posologia: String
+  - uso_continuo: Boolean
+}
+
+class Medicamento {
+  - id_medicamento: Integer
+  - nome_medicamento: String
+  - laboratorio: String
+  - feedback: String
+  + cadastrarMedicamento()
+  + listarCatalogoMedicamentos()
+}
+
+class Profissional {
+  - id_profissional: Integer
+  - nome_profissional: String
+  - numero_identificacao_profissional: String
+  - contato: String
+  - nome_clinica: String
+  - especialidade: String
+  + cadastrarProfissional()
+  + visualizarProfissional()
+}
+
+class Endereco {
+  - id_endereco: Integer
+  - cep: String
+  - logradouro: String
+  - numero: String
+  - complemento: String
+  - bairro: String
+  - cidade: String
+  - estado: String
+}
+
+class Diagnostico {
+  - id_diagnostico: Integer
+  - nome: String
+  - cid: String
+  - descricao: String
+  - cronico: Boolean
+  + registrarDiagnostico()
+}
+
+class Alergia {
+  - id_alergia: Integer
+  - tipo: String
+  - descricao: String
+  + registrarAlergia()
+}
+
+class Upload {
+  - id_upload: Integer
+  - base_64: String
+}
+
+Usuario "1" -- "0..*" Paciente : gerencia >
+Paciente "1" -- "0..*" Agendamento : possui >
+Paciente "1" -- "0..*" Alergia : tem >
+Profissional "1" -- "0..*" Agendamento : atende >
+Endereco "1" -- "1" Profissional : localiza >
+Endereco "1" -- "0..*" Paciente : reside em >
+Agendamento "1" -- "0..*" Diagnostico : gera >
+Agendamento "1" -- "0..*" Exame : solicita >
+Agendamento "1" -- "0..*" Receita : prescreve >
+Receita "1" -- "1..*" Item_Receita : contem >
+Medicamento "1" -- "0..*" Item_Receita : listado em >
+Medicamento "1" -- "0..*" Alergia : causa >
+Exame "1" -- "0..1" Upload : anexo >
+Receita "1" -- "0..1" Upload : anexo >
+@enduml
+
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Usuário Autenticado" as User
+actor "Socorrista / Terceiro" as Socorrista
+
+rectangle "Plataforma de Gestão de Saúde" {
+  usecase "UC01: Gerenciar Conta (Login)" as UC01
+  usecase "UC07: Gerenciar Perfil de Paciente" as UC07
+  usecase "UC02: Cadastrar Profissionais" as UC02
+  usecase "UC03: Marcar Nova Consulta" as UC03
+  usecase "UC04: Reagendar/Cancelar/Arquivar" as UC04
+  usecase "UC05: Gerenciar Prontuário Clínico" as UC05
+  usecase "UC06: Acessar Ficha via QR Code" as UC06
+  usecase "Sincronizar com Agenda Externa" as UCSync
+}
+
+actor "API ViaCEP" as ViaCEP <<Sistema Externo>>
+actor "API Google Calendar" as Google <<Sistema Externo>>
+
+User --> UC01
+User --> UC07
+User --> UC02
+User --> UC03
+User --> UC04
+User --> UC05
+
+Socorrista --> UC06
+
+UC02 --> ViaCEP
+UCSync --> Google
+
+UCSync .up.> UC03 : <<extend>>
+UCSync .up.> UC04 : <<extend>>
+@enduml
